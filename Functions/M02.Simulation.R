@@ -130,9 +130,10 @@ AF.Action.Today <- function(sim)
             # # Push Missed Buys for 3 days max
             filter((action == "MISSED BUY" & missed.signal <= 3) | action != "MISSED BUY") %>%
             # # Filter within capacity only
+            # # Top rankers have lowest buy price (LONG) & highest buy price (SHRT)
             group_by(Type, action2) %>%
-            mutate(rank = case_when(Type == "LONG" ~ rank(-buy.price, ties.method = "last"),
-                                    Type == "SHRT" ~ rank(buy.price, ties.method = "last") ),
+            mutate(rank = case_when(Type == "LONG" ~ rank(buy.price, ties.method = "last"),
+                                    Type == "SHRT" ~ rank(-buy.price, ties.method = "last") ),
                    rank = ifelse(action2 == "BUY", rank, 0) ) %>%
             filter(rank <= can.buy) %>% ungroup() %>% 
             # Other Sanity Checks

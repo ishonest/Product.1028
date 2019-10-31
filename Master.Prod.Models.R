@@ -49,11 +49,11 @@ stocks <- setdiff(unique(all.d1$ticker),
 
 foreach(ticker = stocks
         , .export = c(lsf.str())
-        , .packages = c("dplyr", "foreach", "rpart")
+        , .packages = c("dplyr", "foreach", "rpart", "TTR")
         , .multicombine = TRUE, .inorder = FALSE, .errorhandling = 'remove' 
         ) %dopar%
         {
-          # ticker <- "AYX"
+          # ticker <- "BMA"
           d1 <- all.d1 %>% filter(ticker == !!ticker)
           T.models <- prod.models %>% filter(ticker == !!ticker)
           T.scores <- foreach(a = unique(T.models$algo.ID)
@@ -80,9 +80,7 @@ rm(stocks)
 # Filters investment in more than 3 models
 # Assigns the #units bought/sold
 # -------------------------------------------------------------------------
-
 source("./Functions/M02.Simulation.R")
-
 do.call(unlink,
         list(list.files(c("./Data/Process.Tracker/", "./Data/Simulation/"), full.names = TRUE)))
 
@@ -122,7 +120,7 @@ targets <- foreach(ticker = stocks
               return(targets)
             }
 
-table(targets$action)
+table(targets$action, targets$Type)
 saveRDS(targets, paste0("./Data/Trading/01.Targets.rds"))
 View(targets)
 # -------------------------------------------------------------------------

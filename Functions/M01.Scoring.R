@@ -1,12 +1,12 @@
+library(TTR)
+library(foreach)
+library(dplyr)
+library(rpart)
 # -------------------------------------------------------------------------
 # Associated Functions
 # -------------------------------------------------------------------------
 AF.MA.Compressed <- function(d1, periods = seq(10, 180, 10))
 {
-  library(TTR)
-  library(foreach)
-  library(dplyr)
-  
   d1[is.na(d1)] <- 0
   
   suppressWarnings(

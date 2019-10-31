@@ -197,10 +197,14 @@ IB.Shutter.Down <- function(Force.Close = TRUE)
                 bind_rows(IB.04.activity) %>% 
                 distinct() %>% arrange(desc(order.ts))
 
-  h.latest <- IB.01.targets %>% filter(grepl("SELL", action)) %>%
-              select(account, ticker, algo.ID, model.ID, units) %>%
-              mutate(units = -units)
-    
+  # h.latest <- IB.01.targets %>% filter(grepl("SELL", action)) %>%
+  #             select(account, ticker, algo.ID, model.ID, units) %>%
+  #             mutate(units = -units)
+  
+  h.latest <- h.activity %>% group_by(account, ticker, algo.ID, model.ID) %>% 
+              summarise(units = sum(units)) %>%
+              filter(units != 0) %>% ungroup()
+  
   h.nav <- IB.00.positions %>%
             mutate(PNL = as.numeric(unrealizedPNL) + as.numeric(realizedPNL),
                    value = ifelse(position < 0, -marketValue + 2*PNL, marketValue) ) %>%

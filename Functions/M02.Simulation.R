@@ -55,7 +55,7 @@ Simulate.20191024 <- function(xscore, Process = "Production")
   
   sim2 <- foreach(m = unique(xscore$model.ID), .combine = bind_rows, .errorhandling = 'remove') %do%
     {
-      # m = unique(xscore$model.ID)[11]
+      # m = unique(xscore$model.ID)[2]
       horizon <- as.numeric(substr(m, 10, 11))
       
       sim2 <- xscore %>%
@@ -106,9 +106,6 @@ AF.Action.Today <- function(sim)
             group_by(algo.ID, model.ID) %>%
             arrange(algo.ID, model.ID, ds) %>%
             mutate(account = Parms[["acctCode"]],
-                   action2 = case_when(grepl("BUY", action) ~ "BUY",
-                                       grepl("SELL", action) ~ "SELL",
-                                       TRUE ~ action),
                    last.close = lag(close),
                    missed.signal = ifelse(!is.na(action) & action == "MISSED BUY", 1, 0),
                    missed.signal = missed.signal*cumsum(missed.signal),
@@ -121,7 +118,14 @@ AF.Action.Today <- function(sim)
                                        -floor(pmin(Parms[["max.capacity"]]*lag(volume),
                                                   Parms[["invest.max.model"]]/buy.price))
                                      )) %>%
-            filter(ds == max(ds) & !is.na(action) & !is.na(units)) %>%
+            filter(ds == max(ds)) %>%
+            # Bug fix to offload bought models, but not showing in simulation
+            mutate(action = ifelse(!is.na(in.hand) & is.na(action), "CAN SELL", action),
+                   units = ifelse(!is.na(in.hand) & is.na(units), -in.hand, units),
+                   action2 = case_when(grepl("BUY", action) ~ "BUY",
+                                       grepl("SELL", action) ~ "SELL",
+                                       TRUE ~ action) ) %>%
+            filter(!is.na(action) & !is.na(units)) %>%
             # # buy if higher than last close (for LONG) 
             # # sell if lesser than last.close (for SHORT)
             filter((action2 == "BUY" & Type == "LONG" & buy.price < last.close) | 

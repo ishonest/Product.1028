@@ -37,6 +37,7 @@ hist.d1 <- readRDS("./Data/Summary/Clean.Prices.rds") %>%
 all.d1 <- Get.Incremental.Data(stocks = unique(hist.d1$ticker), first.date = max(hist.d1$ds))
 rm(hist.d1, Get.Data.Clean, Get.Incremental.Data)
 saveRDS(all.d1, "./Data/Summary/Latest.Prices.rds")
+# all.d1 <- readRDS("./Data/Summary/Latest.Prices.rds")
 
 # -------------------------------------------------------------------------
 # Rescoring with New Data
@@ -53,7 +54,7 @@ foreach(ticker = stocks
         , .multicombine = TRUE, .inorder = FALSE, .errorhandling = 'remove' 
         ) %dopar%
         {
-          # ticker <- "BMA"
+          # ticker <- "BPMC"
           d1 <- all.d1 %>% filter(ticker == !!ticker)
           T.models <- prod.models %>% filter(ticker == !!ticker)
           T.scores <- foreach(a = unique(T.models$algo.ID)
@@ -93,7 +94,7 @@ targets <- foreach(ticker = stocks
                    , .multicombine = TRUE, .inorder = FALSE, .errorhandling = 'remove'
                    ) %dopar%
             {
-              # ticker = "BMA"
+              # ticker = "BPMC"
               scores <- readRDS(paste0("./Data/Scores/", ticker, ".rds")) 
               models <- prod.models %>% filter(ticker == !!ticker)
               d1 <- all.d1 %>% filter(ticker == !!ticker) %>% 
